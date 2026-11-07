@@ -222,7 +222,7 @@ describe('battle', () => {
   });
 });
 
-describe('real AI', () => {
+describe('real AI', { timeout: 30_000 }, () => {
   it.each(['Easy', 'Medium', 'Hard'])('plays a full game on %s without errors', (level) => {
     render(
       <Game

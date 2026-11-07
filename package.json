@@ -1,8 +1,30 @@
 {
   "name": "battleship",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Single-player Battleship in the browser against an AI opponent with easy, medium and hard difficulty levels. Static React + TypeScript app.",
+  "keywords": [
+    "battleship",
+    "game",
+    "ai",
+    "react",
+    "typescript",
+    "vite"
+  ],
+  "homepage": "https://felipepojo.github.io/battleship/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felipepojo/battleship.git"
+  },
+  "bugs": {
+    "url": "https://github.com/felipepojo/battleship/issues"
+  },
+  "author": "Felipe Pojo",
+  "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
