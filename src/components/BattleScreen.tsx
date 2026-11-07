@@ -4,6 +4,7 @@ import { SHIP_NAMES } from '../game/labels';
 import type { LogEntry } from '../game/state';
 import BoardGrid, { type CellView } from './BoardGrid';
 import MoveLog from './MoveLog';
+import { shipSpriteStyle } from './shipSprites';
 import ShipStatus from './ShipStatus';
 
 interface BattleScreenProps {
@@ -27,22 +28,33 @@ function ownCellView(board: Board, coord: Coord): CellView {
       ? { className: 'water miss', description: 'miss' }
       : { className: 'water', description: 'water' };
   const name = SHIP_NAMES[ship.type];
-  if (isSunk(ship)) return { className: 'ship sunk', description: `${name}, sunk` };
-  if (shot) return { className: 'ship hit', description: `${name}, hit` };
-  return { className: 'ship', description: name };
+  const style = shipSpriteStyle(ship, coord);
+  if (isSunk(ship)) return { className: 'ship sprite sunk', description: `${name}, sunk`, style };
+  if (shot) return { className: 'ship sprite hit', description: `${name}, hit`, style };
+  return { className: 'ship sprite', description: name, style };
 }
 
 function enemyCellView(board: Board, coord: Coord, reveal: boolean): CellView {
   const shot = getCell(board, coord)?.shot ?? false;
   const ship = shipAt(board, coord);
   if (ship && isSunk(ship)) {
-    return { className: 'ship sunk', description: `sunk ${SHIP_NAMES[ship.type]}` };
+    return {
+      className: 'ship sprite sunk',
+      description: `sunk ${SHIP_NAMES[ship.type]}`,
+      style: shipSpriteStyle(ship, coord),
+    };
   }
   if (shot)
     return ship
       ? { className: 'hit', description: 'hit' }
       : { className: 'water miss', description: 'miss' };
-  if (reveal && ship) return { className: 'ship revealed', description: SHIP_NAMES[ship.type] };
+  if (reveal && ship) {
+    return {
+      className: 'ship sprite revealed',
+      description: SHIP_NAMES[ship.type],
+      style: shipSpriteStyle(ship, coord),
+    };
+  }
   return { className: 'water unknown', description: 'not fired' };
 }
 

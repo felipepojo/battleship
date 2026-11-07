@@ -7,6 +7,7 @@
   --water: #164a75;
   --water-hover: #1d5c90;
   --ship: #7d8b99;
+  --ship-water: #23628f;
   --hit: #ef4f4f;
   --sunk: #8e2424;
   --miss: #cfe3f5;
@@ -223,6 +224,23 @@ button.cell.sunk:hover {
   background: var(--sunk);
 }
 
+.cell.ship.sprite:not(.sunk, .preview-valid, .preview-invalid),
+button.cell.ship.sprite:not(.sunk, .preview-valid, .preview-invalid):hover {
+  background: var(--ship-water);
+}
+
+.cell.sprite::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--sprite) var(--sprite-pos) / var(--sprite-size) no-repeat;
+  pointer-events: none;
+}
+
+.cell.sunk.sprite::before {
+  filter: grayscale(0.7) brightness(0.75);
+}
+
 .cell.revealed {
   background: var(--ship);
   opacity: 0.6;
@@ -316,6 +334,12 @@ button.cell[aria-disabled='true'] {
 .tray-ship.placed .tray-name::after {
   content: ' ✓';
   color: var(--valid);
+}
+
+.ship-icon {
+  width: calc(var(--len) * 13px);
+  height: auto;
+  flex-shrink: 0;
 }
 
 .pips {
@@ -457,8 +481,8 @@ button.cell[aria-disabled='true'] {
 }
 
 .ship-status li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 65px 1fr auto;
   align-items: center;
   gap: 0.5rem;
 }
@@ -466,6 +490,11 @@ button.cell[aria-disabled='true'] {
 .ship-status li.sunk .status-name {
   text-decoration: line-through;
   color: var(--muted);
+}
+
+.ship-status li.sunk .ship-icon {
+  filter: grayscale(1);
+  opacity: 0.5;
 }
 
 .ship-status li.sunk .pip {

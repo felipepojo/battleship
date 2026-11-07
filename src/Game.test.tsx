@@ -354,3 +354,42 @@ describe('touch placement', () => {
     expect(placementCell('E1')).toHaveClass('preview-valid');
   });
 });
+
+describe('ship images', () => {
+  const sprite = (cell: HTMLElement) => cell.style.getPropertyValue('--sprite');
+  const spritePos = (cell: HTMLElement) => cell.style.getPropertyValue('--sprite-pos');
+
+  it('draws each placed ship with its own image, sliced per cell', () => {
+    renderGame();
+    fireEvent.click(placementCell('A1')); // Carrier A1–E1, horizontal
+    expect(sprite(placementCell('C1'))).toContain('carrier-h');
+    expect(spritePos(placementCell('C1'))).toBe('50% 50%');
+    expect(placementCell('F1')).not.toHaveClass('sprite');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate' }));
+    fireEvent.click(placementCell('A3')); // Battleship A3–A6, vertical
+    expect(sprite(placementCell('A6'))).toContain('battleship-v');
+    expect(spritePos(placementCell('A6'))).toBe('50% 100%');
+  });
+
+  it('shows an enemy ship image only once that ship is sunk', () => {
+    renderGame();
+    startBattle();
+    fireEvent.click(enemyCell('D2')); // Destroyer D2–E2
+    expect(enemyCell('D2')).not.toHaveClass('sprite');
+    advanceAI();
+    fireEvent.click(enemyCell('E2'));
+    expect(sprite(enemyCell('D2'))).toContain('destroyer-h');
+    expect(enemyCell('E2')).toHaveClass('sprite');
+    expect(enemyCell('A1')).not.toHaveClass('sprite');
+  });
+
+  it('shows the ship image in the tray and the status panels', () => {
+    renderGame();
+    const carrier = screen.getByRole('button', { name: /^Carrier, 5 cells/ });
+    expect(carrier.querySelector('img')?.getAttribute('src')).toContain('carrier-h');
+    startBattle();
+    const ownShips = screen.getByRole('region', { name: 'Your ships' });
+    expect(ownShips.querySelectorAll('img.ship-icon')).toHaveLength(5);
+  });
+});

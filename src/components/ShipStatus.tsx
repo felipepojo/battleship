@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { FLEET, isSunk, type Board } from '../engine';
 import { SHIP_NAMES } from '../game/labels';
+import ShipIcon from './ShipIcon';
 
 interface ShipStatusProps {
   readonly title: string;
@@ -27,6 +28,7 @@ export default function ShipStatus({ title, board, showDamage }: ShipStatusProps
           const sunk = isSunk(ship);
           return (
             <li key={ship.type} className={sunk ? 'sunk' : ''}>
+              <ShipIcon type={ship.type} />
               <span className="status-name">{SHIP_NAMES[ship.type]}</span>
               <span className="pips" aria-hidden="true">
                 {ship.hits.map((hit, i) => (

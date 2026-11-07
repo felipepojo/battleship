@@ -1,10 +1,11 @@
-import { useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { useRef, useState, type CSSProperties, type FocusEvent, type KeyboardEvent } from 'react';
 import type { Board, Coord } from '../engine';
 import { COLUMN_LABELS, coordLabel } from '../game/labels';
 
 export interface CellView {
   readonly className: string;
   readonly description: string;
+  readonly style?: CSSProperties;
 }
 
 interface BoardGridProps {
@@ -112,6 +113,7 @@ export default function BoardGrid({
                   role="gridcell"
                   aria-label={name}
                   className={`cell ${view.className}`}
+                  style={view.style}
                 />
               );
             }
@@ -125,6 +127,7 @@ export default function BoardGrid({
                     cellRefs.current[row * size + col] = el;
                   }}
                   className={`cell ${view.className}`}
+                  style={view.style}
                   aria-label={name}
                   aria-disabled={cellDisabled || undefined}
                   tabIndex={isActive ? 0 : -1}
