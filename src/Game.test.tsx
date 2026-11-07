@@ -189,7 +189,7 @@ describe('battle', () => {
     fireEvent.click(enemyCell('D2'));
     advanceAI();
     fireEvent.click(enemyCell('E2'));
-    expect(status()).toHaveTextContent("You fired at E2 and sunk the enemy's Destroyer!");
+    expect(status()).toHaveTextContent("You fired at E2 and sank the enemy's Destroyer!");
     const enemyShips = screen.getByRole('region', { name: 'Enemy ships' });
     expect(enemyShips).toHaveTextContent('4 of 5 remaining');
     expect(enemyCell('D2')).toHaveAccessibleName('D2, sunk Destroyer');
