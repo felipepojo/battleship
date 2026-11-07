@@ -16,6 +16,9 @@ import { AI_DELAY_MS } from './game/useGame';
 const ENEMY_SHIP_CELLS = fallbackFleet()
   .ships.flatMap((s) => s.cells)
   .map(coordLabel);
+const ALL_CELLS = Array.from({ length: 100 }, (_, i) =>
+  coordLabel({ row: Math.floor(i / 10), col: i % 10 }),
+);
 
 function renderGame() {
   const ais: { nextMove: ReturnType<typeof vi.fn>; notifyResult: ReturnType<typeof vi.fn> }[] = [];
@@ -216,6 +219,27 @@ describe('battle', () => {
     expect(screen.getByText('Your turn: fire at the enemy')).toBeInTheDocument();
     expect(errorSpy).toHaveBeenCalledTimes(1);
     errorSpy.mockClear();
+  });
+});
+
+describe('real AI', () => {
+  it.each(['Easy', 'Medium', 'Hard'])('plays a full game on %s without errors', (level) => {
+    render(
+      <Game
+        createEnemyBoard={() => fallbackFleet()}
+        createPlayerFleet={() => randomizeFleet(createRng(3))}
+      />,
+    );
+    fireEvent.click(screen.getByRole('radio', { name: level }));
+    startBattle();
+    const enemyShips = new Set(ENEMY_SHIP_CELLS);
+    const order = [...ALL_CELLS.filter((c) => !enemyShips.has(c)), ...ENEMY_SHIP_CELLS];
+    for (const label of order) {
+      if (screen.queryByRole('dialog')) break;
+      fireEvent.click(enemyCell(label));
+      advanceAI();
+    }
+    expect(screen.getByRole('dialog', { name: /You (win|lose)/ })).toBeInTheDocument();
   });
 });
 
