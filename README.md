@@ -20,7 +20,8 @@ Single-player Battleship against an AI. Fully static: Vite + React + TypeScript,
   - `board.ts` — board creation, placement validation, random fleet layout
   - `game.ts` — firing, sink/win detection, turn flow
   - `rng.ts` — seedable RNG for deterministic tests
-  - `ai.ts` — `AIPlayer` interface (implementation lives elsewhere)
+  - `ai.ts` — `AIPlayer` interface
+- `src/ai/` — AI opponents (`createAI(difficulty, rng?)`): easy, medium, hard. See [docs/ai.md](docs/ai.md).
 
 ## Rules
 
