@@ -23,8 +23,8 @@ export function describeShot(
   const at = coordLabel(coord);
   if (result === 'sunk' && sunkShip) {
     return shooter === 'player'
-      ? `You fired at ${at} and sunk the enemy's ${SHIP_NAMES[sunkShip]}!`
-      : `Enemy fired at ${at} and sunk your ${SHIP_NAMES[sunkShip]}!`;
+      ? `You fired at ${at} and sank the enemy's ${SHIP_NAMES[sunkShip]}!`
+      : `Enemy fired at ${at} and sank your ${SHIP_NAMES[sunkShip]}!`;
   }
   const who = shooter === 'player' ? 'You' : 'Enemy';
   return result === 'hit' ? `${who} fired at ${at}: hit!` : `${who} fired at ${at}: miss.`;

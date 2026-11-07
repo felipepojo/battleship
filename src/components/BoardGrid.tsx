@@ -42,6 +42,11 @@ export default function BoardGrid({
   const { size } = board;
   const [active, setActive] = useState<Coord>({ row: 0, col: 0 });
   const cellRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Touch taps emit compatibility mouseover/focus events that would leave a hover preview behind.
+  const lastPointerType = useRef<string | null>(null);
+  const hoverCell = (coord: Coord) => {
+    if (lastPointerType.current !== 'touch') onCellHover?.(coord);
+  };
 
   const moveFocus = (row: number, col: number) => {
     const next = {
@@ -53,6 +58,7 @@ export default function BoardGrid({
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>, { row, col }: Coord) => {
+    lastPointerType.current = null;
     const delta = KEY_DELTAS[event.key];
     if (delta) {
       event.preventDefault();
@@ -127,11 +133,17 @@ export default function BoardGrid({
                     if (!cellDisabled) onCellActivate?.(coord);
                   }}
                   onKeyDown={(e) => onKeyDown(e, coord)}
+                  onPointerEnter={(e) => {
+                    lastPointerType.current = e.pointerType;
+                  }}
+                  onPointerDown={(e) => {
+                    lastPointerType.current = e.pointerType;
+                  }}
                   onFocus={() => {
                     setActive(coord);
-                    onCellHover?.(coord);
+                    hoverCell(coord);
                   }}
-                  onMouseEnter={() => onCellHover?.(coord)}
+                  onMouseEnter={() => hoverCell(coord)}
                 />
               </span>
             );

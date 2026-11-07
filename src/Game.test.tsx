@@ -48,6 +48,11 @@ const placementCell = (label: string) =>
 const logEntries = () =>
   within(screen.getByRole('region', { name: 'Move log' })).queryAllByRole('listitem');
 const status = () => screen.getByRole('status');
+// jsdom queues a 0 ms selectionchange task whenever focus moves.
+const flushFocusTasks = () =>
+  act(() => {
+    vi.advanceTimersByTime(0);
+  });
 const advanceAI = (ms = AI_DELAY_MS) =>
   act(() => {
     vi.advanceTimersByTime(ms);
@@ -56,6 +61,7 @@ const advanceAI = (ms = AI_DELAY_MS) =>
 function startBattle() {
   fireEvent.click(screen.getByRole('button', { name: 'Randomize' }));
   fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+  flushFocusTasks();
 }
 
 function sinkEnemyFleet() {
@@ -183,7 +189,7 @@ describe('battle', () => {
     fireEvent.click(enemyCell('D2'));
     advanceAI();
     fireEvent.click(enemyCell('E2'));
-    expect(status()).toHaveTextContent("You fired at E2 and sunk the enemy's Destroyer!");
+    expect(status()).toHaveTextContent("You fired at E2 and sank the enemy's Destroyer!");
     const enemyShips = screen.getByRole('region', { name: 'Enemy ships' });
     expect(enemyShips).toHaveTextContent('4 of 5 remaining');
     expect(enemyCell('D2')).toHaveAccessibleName('D2, sunk Destroyer');
@@ -277,6 +283,7 @@ describe('reset', () => {
     expect(vi.getTimerCount()).toBe(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'New game' }));
+    flushFocusTasks();
     expect(vi.getTimerCount()).toBe(0);
     advanceAI(5000);
     expect(ais[0]!.nextMove).not.toHaveBeenCalled();
@@ -292,5 +299,58 @@ describe('reset', () => {
     expect(vi.getTimerCount()).toBe(0);
     advanceAI(5000);
     expect(ais[0]!.nextMove).not.toHaveBeenCalled();
+  });
+});
+
+describe('focus management', () => {
+  const placementHeading = () => screen.getByRole('heading', { name: 'Place your fleet' });
+
+  it('does not move focus on first load', () => {
+    renderGame();
+    expect(document.body).toHaveFocus();
+  });
+
+  it('moves focus to the enemy board when the battle starts', () => {
+    renderGame();
+    startBattle();
+    expect(enemyCell('A1')).toHaveFocus();
+  });
+
+  it('moves focus to the placement heading after New game and Play again', () => {
+    renderGame();
+    startBattle();
+    fireEvent.click(screen.getByRole('button', { name: 'New game' }));
+    expect(placementHeading()).toHaveFocus();
+
+    startBattle();
+    sinkEnemyFleet();
+    fireEvent.click(screen.getByRole('button', { name: 'Play again' }));
+    expect(placementHeading()).toHaveFocus();
+  });
+});
+
+describe('touch placement', () => {
+  it('does not leave a stuck preview after tapping a cell', () => {
+    renderGame();
+    const a1 = placementCell('A1');
+    // Event sequence a touchscreen tap produces, including compatibility mouse events.
+    fireEvent.pointerOver(a1, { pointerType: 'touch' });
+    fireEvent.pointerDown(a1, { pointerType: 'touch' });
+    fireEvent.pointerUp(a1, { pointerType: 'touch' });
+    fireEvent.mouseOver(a1);
+    act(() => a1.focus());
+    fireEvent.click(a1);
+
+    expect(status()).toHaveTextContent('Carrier placed');
+    const grid = screen.getByRole('grid', { name: 'Your board' });
+    expect(grid.querySelectorAll('.preview-valid, .preview-invalid')).toHaveLength(0);
+  });
+
+  it('still previews on mouse hover', () => {
+    renderGame();
+    const a1 = placementCell('A1');
+    fireEvent.pointerOver(a1, { pointerType: 'mouse' });
+    fireEvent.mouseOver(a1);
+    expect(placementCell('E1')).toHaveClass('preview-valid');
   });
 });

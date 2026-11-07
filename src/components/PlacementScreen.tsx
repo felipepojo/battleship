@@ -94,7 +94,9 @@ export default function PlacementScreen({
 
   return (
     <section className="placement" aria-labelledby={headingId}>
-      <h2 id={headingId}>Place your fleet</h2>
+      <h2 id={headingId} tabIndex={-1}>
+        Place your fleet
+      </h2>
       <p id={helpId} className="hint">
         Pick a ship, then choose a cell for its top-left end. Press <kbd>R</kbd> or Rotate to turn
         it. Arrow keys move around the grid.
