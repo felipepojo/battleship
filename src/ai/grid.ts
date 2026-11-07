@@ -75,14 +75,17 @@ function runLength(grid: CellState[][], s: Coord, axis: Axis): number {
  * Finds the cells of the ship sunk by the shot at `s`: a straight segment through
  * `s` made only of unresolved hits. Prefers a size whose segment exactly matches
  * the run of hits on that axis, then segments ending at `s` (the shot that sinks a
- * ship usually extends a line). Returns null if no candidate fits.
+ * ship usually extends a line). When several segments tie, only the cells common to
+ * all of them are returned, so a hit that may belong to another ship stays open.
+ * `size` is null when the tied segments disagree on it. Returns null if no candidate fits.
  */
 function resolveSunk(
   grid: CellState[][],
   s: Coord,
   sizes: readonly number[],
-): { size: number; cells: Coord[] } | null {
-  let best: { size: number; cells: Coord[]; score: number } | null = null;
+): { size: number | null; cells: Coord[] } | null {
+  let bestScore = -1;
+  let best: { size: number; cells: Coord[] }[] = [];
   for (const size of sizes) {
     for (const axis of AXES) {
       const [dr, dc] = step(axis);
@@ -94,11 +97,22 @@ function resolveSunk(
         }
         if (!cells.every((c) => inBounds(c.row, c.col) && grid[c.row]![c.col] === 'hit')) continue;
         const score = (run === size ? 4 : 0) + (offset === 0 || offset === size - 1 ? 2 : 0);
-        if (!best || score > best.score) best = { size, cells, score };
+        if (score > bestScore) {
+          bestScore = score;
+          best = [{ size, cells }];
+        } else if (score === bestScore) {
+          best.push({ size, cells });
+        }
       }
     }
   }
-  return best && { size: best.size, cells: best.cells };
+  const [first, ...rest] = best;
+  if (!first) return null;
+  const common = first.cells.filter((c) =>
+    rest.every((other) => other.cells.some((o) => o.row === c.row && o.col === c.col)),
+  );
+  const size = rest.every((other) => other.size === first.size) ? first.size : null;
+  return { size, cells: common };
 }
 
 /**
@@ -140,7 +154,7 @@ export function analyzeShots(
       return;
     }
     for (const c of ship.cells) grid[c.row]![c.col] = 'sunk';
-    if (known === undefined) pending = multisetDiff(pending, [ship.size]);
+    if (known === undefined && ship.size !== null) pending = multisetDiff(pending, [ship.size]);
   });
 
   const openHits: Coord[] = [];

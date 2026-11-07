@@ -38,12 +38,14 @@ class SunkSizeTracker {
   }
 }
 
-/** `shots` plus any notified results it is missing. */
+/** `shots` plus any in-bounds notified results it is missing. */
 function mergeLogs(shots: ShotLog, notified: readonly ShotRecord[]): ShotLog {
   if (notified.length === 0) return shots;
-  const seen = new Set(shots.map(({ coord }) => key(coord.row, coord.col)));
-  const extra = notified.filter(({ coord }) => {
-    const k = key(coord.row, coord.col);
+  const valid = ({ coord }: ShotRecord) => inBounds(coord.row, coord.col);
+  const seen = new Set(shots.filter(valid).map(({ coord }) => key(coord.row, coord.col)));
+  const extra = notified.filter((record) => {
+    if (!valid(record)) return false;
+    const k = key(record.coord.row, record.coord.col);
     if (seen.has(k)) return false;
     seen.add(k);
     return true;

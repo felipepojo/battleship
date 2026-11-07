@@ -132,6 +132,19 @@ describe.each(LEVELS)('%s AI safety', (level) => {
     expect(() => ai.nextMove([], ALL_SIZES)).toThrow(/No unfired cells/);
   });
 
+  it('keeps notified shots that share a numeric key with invalid log entries', () => {
+    const ai = createAI(level, createRng(5));
+    ai.notifyResult({ row: 0, col: 0 }, 'miss');
+    const log = [
+      shot(-1, 10),
+      ...allMissesExcept([
+        { row: 0, col: 0 },
+        { row: 9, col: 9 },
+      ]),
+    ];
+    expect(ai.nextMove(log, [2])).toEqual({ row: 9, col: 9 });
+  });
+
   it('throws when every cell has been fired', () => {
     expect(() => createAI(level, createRng(1)).nextMove(allMissesExcept([]), [2])).toThrow(
       /No unfired cells/,
@@ -209,6 +222,19 @@ describe('sunk ship attribution', () => {
     );
     expect(analysis.grid[0]!.slice(0, 3)).toEqual(['sunk', 'sunk', 'sunk']);
     expect(analysis.openHits).toEqual([]);
+  });
+
+  it('leaves a hit open when a sunk ship could lie on either axis', () => {
+    // Cruiser hit at (4,4); destroyer at (3,5)-(4,5) sunk at (4,5).
+    const analysis = analyzeShots(
+      [shot(4, 4, 'hit'), shot(3, 5, 'hit'), shot(4, 5, 'sunk')],
+      [5, 4, 3, 3],
+    );
+    expect(analysis.grid[4]![5]).toBe('sunk');
+    expect(analysis.openHits).toEqual([
+      { row: 4, col: 4 },
+      { row: 3, col: 5 },
+    ]);
   });
 
   it('leaves extra hits on the line open when the sunk ship is shorter', () => {

@@ -11,7 +11,8 @@ _hit_ (an open hit, not yet attributed to a sunk ship) or _sunk_.
 
 When a shot sinks a ship, the AI works out which ship size it was by comparing
 `remainingShipSizes` with the previous call, then marks the straight run of hits through that cell
-with that length as sunk. Any other hits stay open, so a ship hit while sinking another is still
+with that length as sunk. If segments on both axes fit equally well, only the cells they share are
+marked sunk. Any other hits stay open, so a ship hit while sinking another is still
 chased.
 
 Safety guarantees, for every level and every input:
