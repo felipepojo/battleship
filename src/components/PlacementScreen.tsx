@@ -14,6 +14,8 @@ import {
 import { SHIP_NAMES } from '../game/labels';
 import type { PlacementState } from '../game/state';
 import BoardGrid, { type CellView } from './BoardGrid';
+import ShipIcon from './ShipIcon';
+import { shipSpriteStyle } from './shipSprites';
 
 const DIFFICULTIES: readonly { value: AIDifficulty; label: string }[] = [
   { value: 'easy', label: 'Easy' },
@@ -85,11 +87,16 @@ export default function PlacementScreen({
 
   const getCellView = (coord: Coord): CellView => {
     const shipType = getCell(board, coord)?.shipType ?? null;
-    const classes = [shipType ? 'ship' : 'water'];
+    const ship = shipType ? board.ships.find((s) => s.type === shipType) : undefined;
+    const classes = [ship ? 'ship sprite' : 'water'];
     if (preview?.cells.has(`${coord.row},${coord.col}`)) {
       classes.push(preview.valid ? 'preview-valid' : 'preview-invalid');
     }
-    return { className: classes.join(' '), description: shipType ? SHIP_NAMES[shipType] : 'empty' };
+    return {
+      className: classes.join(' '),
+      description: shipType ? SHIP_NAMES[shipType] : 'empty',
+      style: ship ? shipSpriteStyle(ship, coord) : undefined,
+    };
   };
 
   return (
@@ -119,11 +126,7 @@ export default function PlacementScreen({
                     onClick={() => onSelectShip(type)}
                   >
                     <span className="tray-name">{SHIP_NAMES[type]}</span>
-                    <span className="pips" aria-hidden="true">
-                      {Array.from({ length: SHIP_SIZES[type] }, (_, i) => (
-                        <span key={i} className="pip" />
-                      ))}
-                    </span>
+                    <ShipIcon type={type} />
                   </button>
                 </li>
               );

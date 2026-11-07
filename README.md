@@ -95,6 +95,10 @@ GitHub Pages serves the site from `/battleship/`, so Vite's `base` defaults to `
 [`vite.config.ts`](vite.config.ts). A wrong base path is the usual cause of a blank page. To deploy to a
 host that serves from the root, such as Vercel or Netlify, build with `BASE_PATH=/ npm run build`.
 
+## Credits
+
+Ship images come from the [Sea Warfare set](https://opengameart.org/content/sea-warfare-set-ships-and-more) by Lowder2 on OpenGameArt, released under [CC0](https://creativecommons.org/publicdomain/zero/1.0/) (public domain). They are cropped and rotated copies in `src/assets/ships/`.
+
 ## License
 
 [MIT](LICENSE) © Felipe Pojo
