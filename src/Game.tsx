@@ -1,12 +1,27 @@
+import { useEffect, useRef } from 'react';
 import BattleScreen from './components/BattleScreen';
 import GameOver from './components/GameOver';
 import PlacementScreen from './components/PlacementScreen';
 import { useGame, type GameOptions } from './game/useGame';
 
+const SCREEN_FOCUS_TARGET = {
+  battle: '.enemy-board [tabindex="0"]',
+  placement: '.placement h2',
+} as const;
+
 export default function Game(options: GameOptions) {
   const game = useGame(options);
   const { state, aiTurn } = game;
   const over = state.game?.phase === 'over';
+  const screenName = state.game ? 'battle' : 'placement';
+  const mainRef = useRef<HTMLElement>(null);
+  const shownScreen = useRef(screenName);
+
+  useEffect(() => {
+    if (shownScreen.current === screenName) return;
+    shownScreen.current = screenName;
+    mainRef.current?.querySelector<HTMLElement>(SCREEN_FOCUS_TARGET[screenName])?.focus();
+  }, [screenName]);
 
   return (
     <div className="app">
@@ -16,7 +31,7 @@ export default function Game(options: GameOptions) {
           {state.message}
         </p>
       </header>
-      <main inert={over}>
+      <main ref={mainRef} inert={over}>
         {state.game ? (
           <BattleScreen
             game={state.game}

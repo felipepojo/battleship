@@ -48,6 +48,11 @@ const placementCell = (label: string) =>
 const logEntries = () =>
   within(screen.getByRole('region', { name: 'Move log' })).queryAllByRole('listitem');
 const status = () => screen.getByRole('status');
+// jsdom queues a 0 ms selectionchange task whenever focus moves.
+const flushFocusTasks = () =>
+  act(() => {
+    vi.advanceTimersByTime(0);
+  });
 const advanceAI = (ms = AI_DELAY_MS) =>
   act(() => {
     vi.advanceTimersByTime(ms);
@@ -56,6 +61,7 @@ const advanceAI = (ms = AI_DELAY_MS) =>
 function startBattle() {
   fireEvent.click(screen.getByRole('button', { name: 'Randomize' }));
   fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+  flushFocusTasks();
 }
 
 function sinkEnemyFleet() {
@@ -277,6 +283,7 @@ describe('reset', () => {
     expect(vi.getTimerCount()).toBe(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'New game' }));
+    flushFocusTasks();
     expect(vi.getTimerCount()).toBe(0);
     advanceAI(5000);
     expect(ais[0]!.nextMove).not.toHaveBeenCalled();
@@ -292,5 +299,32 @@ describe('reset', () => {
     expect(vi.getTimerCount()).toBe(0);
     advanceAI(5000);
     expect(ais[0]!.nextMove).not.toHaveBeenCalled();
+  });
+});
+
+describe('focus management', () => {
+  const placementHeading = () => screen.getByRole('heading', { name: 'Place your fleet' });
+
+  it('does not move focus on first load', () => {
+    renderGame();
+    expect(document.body).toHaveFocus();
+  });
+
+  it('moves focus to the enemy board when the battle starts', () => {
+    renderGame();
+    startBattle();
+    expect(enemyCell('A1')).toHaveFocus();
+  });
+
+  it('moves focus to the placement heading after New game and Play again', () => {
+    renderGame();
+    startBattle();
+    fireEvent.click(screen.getByRole('button', { name: 'New game' }));
+    expect(placementHeading()).toHaveFocus();
+
+    startBattle();
+    sinkEnemyFleet();
+    fireEvent.click(screen.getByRole('button', { name: 'Play again' }));
+    expect(placementHeading()).toHaveFocus();
   });
 });
