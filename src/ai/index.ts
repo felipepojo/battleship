@@ -3,9 +3,11 @@ import { createEasyAI } from './easy';
 import { createHardAI } from './hard';
 import { createMediumAI } from './medium';
 
+export type { AIDifficulty, AIPlayer, CreateAIPlayer } from '../engine';
 export { createEasyAI } from './easy';
 export { createMediumAI } from './medium';
 export { createHardAI } from './hard';
+export { createRandomAI, unfiredCells } from './random';
 
 /** Creates an AI opponent. Pass a seeded `rng` (see `createRng`) for deterministic play. */
 export const createAI: CreateAIPlayer = (
