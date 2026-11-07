@@ -328,3 +328,29 @@ describe('focus management', () => {
     expect(placementHeading()).toHaveFocus();
   });
 });
+
+describe('touch placement', () => {
+  it('does not leave a stuck preview after tapping a cell', () => {
+    renderGame();
+    const a1 = placementCell('A1');
+    // Event sequence a touchscreen tap produces, including compatibility mouse events.
+    fireEvent.pointerOver(a1, { pointerType: 'touch' });
+    fireEvent.pointerDown(a1, { pointerType: 'touch' });
+    fireEvent.pointerUp(a1, { pointerType: 'touch' });
+    fireEvent.mouseOver(a1);
+    act(() => a1.focus());
+    fireEvent.click(a1);
+
+    expect(status()).toHaveTextContent('Carrier placed');
+    const grid = screen.getByRole('grid', { name: 'Your board' });
+    expect(grid.querySelectorAll('.preview-valid, .preview-invalid')).toHaveLength(0);
+  });
+
+  it('still previews on mouse hover', () => {
+    renderGame();
+    const a1 = placementCell('A1');
+    fireEvent.pointerOver(a1, { pointerType: 'mouse' });
+    fireEvent.mouseOver(a1);
+    expect(placementCell('E1')).toHaveClass('preview-valid');
+  });
+});
